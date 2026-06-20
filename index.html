@@ -1,63 +1,351 @@
-function startTimer(){
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyTools Pro</title>
 
-if(timer) return;
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
 
-timer = setInterval(() => {
+body{
+background:#111827;
+color:white;
+padding:20px;
+}
 
-if(totalSeconds > 0){
+.container{
+max-width:700px;
+margin:auto;
+}
 
-totalSeconds--;
-updateDisplay();
+h1{
+text-align:center;
+margin-bottom:20px;
+}
 
-}else{
+.card{
+background:#1f2937;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+}
 
-clearInterval(timer);
-timer = null;
+input{
+width:100%;
+padding:10px;
+border:none;
+border-radius:10px;
+margin-top:10px;
+margin-bottom:10px;
+}
 
-if(mode === "study"){
+button{
+padding:10px 15px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+margin:5px;
+font-weight:bold;
+}
 
-let mins =
-parseInt(document.getElementById("minutesInput").value);
+.start{background:#22c55e;color:white;}
+.stop{background:#ef4444;color:white;}
+.reset{background:#3b82f6;color:white;}
+.motive{background:#f59e0b;color:white;}
 
-totalStudy += mins;
-sessionCount++;
+.timer{
+font-size:60px;
+text-align:center;
+margin:20px 0;
+font-weight:bold;
+}
 
-localStorage.setItem("totalStudy", totalStudy);
-localStorage.setItem("sessionCount", sessionCount);
+.mode{
+text-align:center;
+font-size:22px;
+margin-bottom:10px;
+}
 
-document.getElementById("totalStudy").innerText = totalStudy;
-document.getElementById("sessionCount").innerText = sessionCount;
+ul{
+list-style:none;
+margin-top:10px;
+}
 
-alert("🎉 공부 완료! 휴식 시작");
+li{
+background:#374151;
+padding:10px;
+border-radius:10px;
+margin-top:8px;
+display:flex;
+justify-content:space-between;
+}
 
-mode = "break";
-totalSeconds = BREAK_TIME * 60;
-originalSeconds = totalSeconds;
+.small{
+font-size:14px;
+color:#9ca3af;
+margin-top:10px;
+text-align:center;
+}
+</style>
+</head>
 
-updateDisplay();
+<body>
 
-startTimer();
+<div class="container">
 
-}else{
+<h1>📚 StudyTools Pro</h1>
 
-alert("☕ 휴식 종료! 공부 시작");
+<div class="card">
 
-mode = "study";
+<h2>공부 설정</h2>
 
-let mins =
-parseInt(document.getElementById("minutesInput").value);
+<input type="number" id="studyMinutes" value="25" placeholder="공부 시간(분)">
 
-totalSeconds = mins * 60;
-originalSeconds = totalSeconds;
+<div class="mode" id="mode">공부 시간</div>
 
-updateDisplay();
+<div class="timer" id="timer">25:00</div>
 
-startTimer();
+<button class="start" onclick="startTimer()">공부 시작</button>
+<button class="stop" onclick="pauseTimer()">멈춤</button>
+<button class="reset" onclick="resetTimer()">초기화</button>
+
+</div>
+
+<div class="card">
+
+<h2>🔥 동기부여</h2>
+
+<button class="motive" onclick="motivate()">랜덤 동기부여</button>
+
+<p id="motivationText" style="margin-top:15px;">
+버튼을 눌러보세요.
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>✅ 할 일 목록</h2>
+
+<input type="text" id="todoInput" placeholder="할 일을 입력">
+
+<button onclick="addTodo()">추가</button>
+
+<ul id="todoList"></ul>
+
+</div>
+
+<div class="card">
+
+<h2>📊 공부 통계</h2>
+
+<p>완료한 공부 세션: <span id="sessions">0</span>회</p>
+
+</div>
+
+</div>
+
+<script>
+
+let timer;
+let isRunning=false;
+let isStudy=true;
+
+let studyMinutes=25;
+let breakMinutes=5;
+
+let timeLeft=studyMinutes*60;
+
+let sessions=
+Number(localStorage.getItem("sessions")) || 0;
+
+document.getElementById("sessions").innerText=sessions;
+
+function updateDisplay(){
+
+let minutes=Math.floor(timeLeft/60);
+let seconds=timeLeft%60;
+
+document.getElementById("timer").innerText=
+String(minutes).padStart(2,"0")
++":"
++
+String(seconds).padStart(2,"0");
 
 }
+
+function startTimer(){
+
+if(isRunning) return;
+
+studyMinutes=
+Number(document.getElementById("studyMinutes").value)||25;
+
+if(isStudy && timeLeft<=0){
+timeLeft=studyMinutes*60;
+}
+
+isRunning=true;
+
+timer=setInterval(()=>{
+
+timeLeft--;
+
+updateDisplay();
+
+if(timeLeft<=0){
+
+if(isStudy){
+
+sessions++;
+localStorage.setItem("sessions",sessions);
+document.getElementById("sessions").innerText=sessions;
+
+alert("공부 완료! 5분 휴식 시작");
+
+isStudy=false;
+document.getElementById("mode").innerText="휴식 시간";
+
+timeLeft=breakMinutes*60;
+
+}else{
+
+alert("휴식 완료! 공부 시작");
+
+isStudy=true;
+document.getElementById("mode").innerText="공부 시간";
+
+timeLeft=studyMinutes*60;
+
+}
+
+updateDisplay();
 
 }
 
 },1000);
 
 }
+
+function pauseTimer(){
+
+clearInterval(timer);
+isRunning=false;
+
+}
+
+function resetTimer(){
+
+clearInterval(timer);
+
+isRunning=false;
+isStudy=true;
+
+studyMinutes=
+Number(document.getElementById("studyMinutes").value)||25;
+
+timeLeft=studyMinutes*60;
+
+document.getElementById("mode").innerText="공부 시간";
+
+updateDisplay();
+
+}
+
+const quotes=[
+
+"오늘의 노력이 내일의 실력이다.",
+"포기하지 않는 사람이 결국 이긴다.",
+"1%의 성장도 계속되면 엄청난 변화다.",
+"지금 공부하는 내가 미래의 나를 만든다.",
+"성공은 꾸준함에서 시작된다.",
+"하기 싫을 때 하는 공부가 진짜 공부다.",
+"오늘 미루면 내일 더 힘들어진다.",
+"목표를 잊지 말고 계속 전진하자.",
+"작은 진전도 진전이다.",
+"지금 시작하는 사람이 결국 앞서간다."
+
+];
+
+function motivate(){
+
+const random=
+quotes[Math.floor(Math.random()*quotes.length)];
+
+document.getElementById("motivationText").innerText=random;
+
+}
+
+function addTodo(){
+
+const input=
+document.getElementById("todoInput");
+
+const text=input.value.trim();
+
+if(text==="") return;
+
+const todos=
+JSON.parse(localStorage.getItem("todos")) || [];
+
+todos.push(text);
+
+localStorage.setItem("todos",JSON.stringify(todos));
+
+input.value="";
+
+renderTodos();
+
+}
+
+function renderTodos(){
+
+const list=
+document.getElementById("todoList");
+
+list.innerHTML="";
+
+const todos=
+JSON.parse(localStorage.getItem("todos")) || [];
+
+todos.forEach((todo,index)=>{
+
+const li=document.createElement("li");
+
+li.innerHTML=`
+<span>${todo}</span>
+<button onclick="deleteTodo(${index})">삭제</button>
+`;
+
+list.appendChild(li);
+
+});
+
+}
+
+function deleteTodo(index){
+
+const todos=
+JSON.parse(localStorage.getItem("todos")) || [];
+
+todos.splice(index,1);
+
+localStorage.setItem("todos",JSON.stringify(todos));
+
+renderTodos();
+
+}
+
+renderTodos();
+updateDisplay();
+
+</script>
+
+</body>
+</html>
