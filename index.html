@@ -1,253 +1,59 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudyTools Pro</title>
+function startTimer(){
 
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
+if(timer) return;
 
-body{
-background:#0f172a;
-color:white;
-display:flex;
-justify-content:center;
-padding:20px;
-}
+timer = setInterval(() => {
 
-.container{
-width:100%;
-max-width:700px;
-}
+if(totalSeconds > 0){
 
-.card{
-background:#1e293b;
-padding:20px;
-border-radius:15px;
-margin-bottom:15px;
-}
+totalSeconds--;
+updateDisplay();
 
-h1{
-text-align:center;
-margin-bottom:20px;
-color:#38bdf8;
-}
-
-input{
-width:100%;
-padding:10px;
-border:none;
-border-radius:8px;
-margin-top:5px;
-margin-bottom:10px;
-}
-
-button{
-border:none;
-padding:10px 15px;
-border-radius:8px;
-cursor:pointer;
-color:white;
-}
-
-.study{background:#22c55e;}
-.breakBtn{background:#3b82f6;}
-.pause{background:#ef4444;}
-.resume{background:#f59e0b;}
-.motivation{background:#8b5cf6;}
-.todoBtn{background:#14b8a6;}
-
-.buttons{
-display:flex;
-flex-wrap:wrap;
-gap:10px;
-justify-content:center;
-margin-top:15px;
-}
-
-#timer{
-font-size:70px;
-font-weight:bold;
-text-align:center;
-margin:20px 0;
-}
-
-#status{
-text-align:center;
-font-size:20px;
-margin-bottom:20px;
-}
-
-.quote{
-background:#334155;
-padding:15px;
-border-radius:10px;
-text-align:center;
-margin-top:15px;
-}
-
-.stats{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-top:15px;
-}
-
-.stat{
-background:#334155;
-padding:15px;
-border-radius:10px;
-text-align:center;
-}
-
-.todo-item{
-display:flex;
-justify-content:space-between;
-align-items:center;
-background:#334155;
-padding:10px;
-border-radius:10px;
-margin-top:10px;
-}
-
-.todo-left{
-display:flex;
-gap:10px;
-align-items:center;
-}
-
-.done{
-text-decoration:line-through;
-opacity:.6;
-}
-</style>
-</head>
-<body>
-
-<div class="container">
-
-<h1>📚 StudyTools Pro</h1>
-
-<div class="card">
-
-<label>오늘 목표</label>
-<input id="goalInput" placeholder="예) 영어 단어 100개">
-
-<label>공부 시간(분)</label>
-<input type="number" id="studyTime" value="25">
-
-<label>휴식 시간(분)</label>
-<input type="number" id="breakTime" value="5">
-
-</div>
-
-<div id="timer">25:00</div>
-<div id="status">대기 중</div>
-
-<div class="buttons">
-<button class="study" onclick="startStudy()">공부 시작</button>
-<button class="breakBtn" onclick="startBreak()">휴식 시작</button>
-<button class="pause" onclick="pauseTimer()">멈춤</button>
-<button class="resume" onclick="resumeTimer()">이어하기</button>
-<button class="motivation" onclick="showQuote()">동기부여</button>
-</div>
-
-<div class="quote" id="quote">
-🔥 오늘도 목표를 향해 한 걸음!
-</div>
-
-<div class="stats">
-
-<div class="stat">
-<h3>총 공부시간</h3>
-<div id="totalStudy">0분</div>
-</div>
-
-<div class="stat">
-<h3>공부 횟수</h3>
-<div id="sessionCount">0회</div>
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>📌 할 일 목록</h2>
-
-<input id="todoInput" placeholder="할 일을 입력">
-
-<button class="todoBtn" onclick="addTodo()">
-추가
-</button>
-
-<div id="todoList"></div>
-
-</div>
-
-</div>
-
-<script>
-
-let timer;
-let timeLeft=1500;
-let paused=false;
-
-let totalStudy=
-parseInt(localStorage.getItem("totalStudy"))||0;
-
-let sessionCount=
-parseInt(localStorage.getItem("sessionCount"))||0;
-
-let todos=
-JSON.parse(localStorage.getItem("todos"))||[];
-
-document.getElementById("totalStudy").innerText=
-totalStudy+"분";
-
-document.getElementById("sessionCount").innerText=
-sessionCount+"회";
-
-const quotes=[
-"포기하지 마라. 오늘의 노력이 내일의 결과다.",
-"성공은 작은 노력이 반복된 결과다.",
-"꾸준함이 재능을 이긴다.",
-"오늘 공부한 1시간이 미래를 바꾼다.",
-"꿈은 행동으로 이루어진다.",
-"천천히 가도 멈추지만 않으면 된다.",
-"실패는 성장의 과정이다.",
-"할 수 있다고 믿는 순간 절반은 성공이다."
-];
-
-function updateDisplay(){
-let min=Math.floor(timeLeft/60);
-let sec=timeLeft%60;
-
-document.getElementById("timer").innerText=
-String(min).padStart(2,"0")+":"+
-String(sec).padStart(2,"0");
-}
-
-function runTimer(){
+}else{
 
 clearInterval(timer);
+timer = null;
 
-timer=setInterval(()=>{
+if(mode === "study"){
 
-if(!paused){
+let mins =
+parseInt(document.getElementById("minutesInput").value);
 
-timeLeft--;
+totalStudy += mins;
+sessionCount++;
+
+localStorage.setItem("totalStudy", totalStudy);
+localStorage.setItem("sessionCount", sessionCount);
+
+document.getElementById("totalStudy").innerText = totalStudy;
+document.getElementById("sessionCount").innerText = sessionCount;
+
+alert("🎉 공부 완료! 휴식 시작");
+
+mode = "break";
+totalSeconds = BREAK_TIME * 60;
+originalSeconds = totalSeconds;
 
 updateDisplay();
 
-if(timeLeft<=0){
-clearInterval(timer);
-alert("시간 종료!");
+startTimer();
+
+}else{
+
+alert("☕ 휴식 종료! 공부 시작");
+
+mode = "study";
+
+let mins =
+parseInt(document.getElementById("minutesInput").value);
+
+totalSeconds = mins * 60;
+originalSeconds = totalSeconds;
+
+updateDisplay();
+
+startTimer();
+
 }
 
 }
@@ -255,158 +61,3 @@ alert("시간 종료!");
 },1000);
 
 }
-
-function startStudy(){
-
-let mins=
-parseInt(document.getElementById("studyTime").value);
-
-timeLeft=mins*60;
-
-sessionCount++;
-totalStudy+=mins;
-
-localStorage.setItem("sessionCount",sessionCount);
-localStorage.setItem("totalStudy",totalStudy);
-
-document.getElementById("sessionCount").innerText=
-sessionCount+"회";
-
-document.getElementById("totalStudy").innerText=
-totalStudy+"분";
-
-document.getElementById("status").innerText=
-"📖 공부 중";
-
-paused=false;
-
-updateDisplay();
-runTimer();
-}
-
-function startBreak(){
-
-let mins=
-parseInt(document.getElementById("breakTime").value);
-
-timeLeft=mins*60;
-
-document.getElementById("status").innerText=
-"☕ 휴식 중";
-
-paused=false;
-
-updateDisplay();
-runTimer();
-}
-
-function pauseTimer(){
-paused=true;
-document.getElementById("status").innerText=
-"⏸ 멈춤";
-}
-
-function resumeTimer(){
-paused=false;
-document.getElementById("status").innerText=
-"▶ 진행 중";
-}
-
-function showQuote(){
-
-let random=
-quotes[Math.floor(Math.random()*quotes.length)];
-
-document.getElementById("quote").innerText=
-"🔥 "+random;
-}
-
-function renderTodos(){
-
-const list=
-document.getElementById("todoList");
-
-list.innerHTML="";
-
-todos.forEach((todo,index)=>{
-
-list.innerHTML+=`
-<div class="todo-item">
-
-<div class="todo-left">
-
-<input type="checkbox"
-${todo.done?"checked":""}
-onchange="toggleTodo(${index})">
-
-<span class="${todo.done?"done":""}">
-${todo.text}
-</span>
-
-</div>
-
-<button onclick="deleteTodo(${index})">
-삭제
-</button>
-
-</div>
-`;
-
-});
-
-}
-
-function addTodo(){
-
-const input=
-document.getElementById("todoInput");
-
-if(!input.value.trim()) return;
-
-todos.push({
-text:input.value,
-done:false
-});
-
-localStorage.setItem(
-"todos",
-JSON.stringify(todos)
-);
-
-input.value="";
-
-renderTodos();
-}
-
-function toggleTodo(index){
-
-todos[index].done=
-!todos[index].done;
-
-localStorage.setItem(
-"todos",
-JSON.stringify(todos)
-);
-
-renderTodos();
-}
-
-function deleteTodo(index){
-
-todos.splice(index,1);
-
-localStorage.setItem(
-"todos",
-JSON.stringify(todos)
-);
-
-renderTodos();
-}
-
-updateDisplay();
-renderTodos();
-
-</script>
-
-</body>
-</html>
