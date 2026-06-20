@@ -83,15 +83,22 @@ border:none;
 }
 
 #todoInput{
-width:80%;
+width:75%;
 }
 
 ul{
 margin-top:15px;
+list-style:none;
 }
 
 li{
 margin-bottom:10px;
+padding:10px;
+background:#24344f;
+border-radius:8px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
 .progress{
@@ -111,6 +118,14 @@ color:#facc15;
 font-weight:bold;
 text-align:center;
 }
+
+.deleteBtn{
+background:#ef4444;
+color:white;
+padding:5px 10px;
+border:none;
+border-radius:5px;
+}
 </style>
 </head>
 
@@ -122,27 +137,15 @@ text-align:center;
 
 <div class="card">
 <h2>🔥 오늘의 동기부여</h2>
-
-<p class="quote" id="quote">
-버튼을 눌러 동기부여를 받아보세요!
-</p>
-
-<div style="text-align:center;margin-top:15px;">
-<button id="motivationBtn"
-style="background:#facc15;color:black;">
-🎲 동기부여 받기
-</button>
-</div>
-
+<p class="quote" id="quote"></p>
 </div>
 
 <div class="card">
-
 <h2>⏱ 공부 타이머</h2>
 
-<label>공부 시간(분)</label><br><br>
+<label>공부 시간 (분)</label><br><br>
 
-<input type="number" id="minutesInput" value="25" min="1" max="999">
+<input type="number" id="minutesInput" value="25" min="1">
 
 <div class="timer" id="timer">25:00</div>
 
@@ -153,78 +156,42 @@ style="background:#facc15;color:black;">
 </div>
 
 <progress id="progressBar" class="progress" value="0" max="100"></progress>
-
 </div>
 
 <div class="card">
-
 <h2>📊 공부 통계</h2>
 
 <div class="stats">
 총 공부 시간 : <span id="totalStudy">0</span>분<br>
 완료한 공부 세션 : <span id="sessionCount">0</span>회
 </div>
-
 </div>
 
 <div class="card">
-
 <h2>✅ 할 일 목록</h2>
 
 <input type="text" id="todoInput" placeholder="할 일을 입력하세요">
 <button class="add" onclick="addTodo()">추가</button>
 
 <ul id="todoList"></ul>
-
 </div>
 
 </div>
 
 <script>
-
 const quotes = [
 "오늘의 1시간이 미래의 나를 만든다.",
 "포기하지 않는 사람이 결국 이긴다.",
 "작은 노력도 매일 쌓이면 큰 결과가 된다.",
 "지금의 집중이 내일의 자신감을 만든다.",
 "성공은 꾸준함이 만든 습관의 결과다.",
-"남들보다 조금 더 버티면 반드시 성장한다.",
-"노력은 절대 배신하지 않는다.",
-"시작이 반이다.",
-"포기하지 않으면 실패도 아니다.",
-"지금 하는 공부가 미래를 바꾼다.",
-"천천히 가도 멈추지만 않으면 된다.",
-"성공은 작은 습관의 반복이다.",
-"오늘의 땀이 내일의 결과다.",
-"할 수 있다고 믿는 순간 가능성은 시작된다.",
-"어제보다 나아진 오늘이면 충분하다."
+"남들보다 조금 더 버티면 반드시 성장한다."
 ];
 
-let lastQuote = -1;
-
-function showRandomQuote(){
-
-let random;
-
-do{
-random = Math.floor(Math.random()*quotes.length);
-}
-while(random === lastQuote && quotes.length > 1);
-
-lastQuote = random;
-
 document.getElementById("quote").innerText =
-quotes[random];
-}
+quotes[Math.floor(Math.random()*quotes.length)];
 
-document.getElementById("motivationBtn")
-.addEventListener("click",showRandomQuote);
-
-showRandomQuote();
-  
-let timer;
-let totalSeconds=1500;
-let originalSeconds=1500;
+let timer = null;
 
 let totalStudy =
 parseInt(localStorage.getItem("totalStudy")) || 0;
@@ -235,38 +202,34 @@ parseInt(localStorage.getItem("sessionCount")) || 0;
 document.getElementById("totalStudy").innerText = totalStudy;
 document.getElementById("sessionCount").innerText = sessionCount;
 
+let minutes =
+parseInt(document.getElementById("minutesInput").value);
+
+let totalSeconds = minutes * 60;
+let originalSeconds = totalSeconds;
+
 function updateDisplay(){
 
-let minutes=Math.floor(totalSeconds/60);
-let seconds=totalSeconds%60;
+let mins = Math.floor(totalSeconds / 60);
+let secs = totalSeconds % 60;
 
-document.getElementById("timer").innerText=
-String(minutes).padStart(2,"0")+":"+
-String(seconds).padStart(2,"0");
+document.getElementById("timer").innerText =
+String(mins).padStart(2,"0") + ":" +
+String(secs).padStart(2,"0");
 
 let progress =
 ((originalSeconds-totalSeconds)/originalSeconds)*100;
 
-document.getElementById("progressBar").value=
-progress;
+document.getElementById("progressBar").value = progress;
 }
 
 function startTimer(){
 
 if(timer) return;
 
-if(totalSeconds<=0){
+timer = setInterval(() => {
 
-let mins =
-parseInt(document.getElementById("minutesInput").value);
-
-totalSeconds=mins*60;
-originalSeconds=mins*60;
-}
-
-timer=setInterval(()=>{
-
-if(totalSeconds>0){
+if(totalSeconds > 0){
 
 totalSeconds--;
 updateDisplay();
@@ -274,7 +237,7 @@ updateDisplay();
 }else{
 
 clearInterval(timer);
-timer=null;
+timer = null;
 
 let mins =
 parseInt(document.getElementById("minutesInput").value);
@@ -282,100 +245,113 @@ parseInt(document.getElementById("minutesInput").value);
 totalStudy += mins;
 sessionCount++;
 
-localStorage.setItem("totalStudy",totalStudy);
-localStorage.setItem("sessionCount",sessionCount);
+localStorage.setItem("totalStudy", totalStudy);
+localStorage.setItem("sessionCount", sessionCount);
 
-document.getElementById("totalStudy").innerText=totalStudy;
-document.getElementById("sessionCount").innerText=sessionCount;
+document.getElementById("totalStudy").innerText = totalStudy;
+document.getElementById("sessionCount").innerText = sessionCount;
 
-alert("🎉 공부 완료! 수고했어요!");
+alert("🎉 공부 완료!");
 
 }
 
 },1000);
-
 }
 
 function stopTimer(){
 clearInterval(timer);
-timer=null;
+timer = null;
 }
 
 function resetTimer(){
 
 clearInterval(timer);
-timer=null;
+timer = null;
 
 let mins =
 parseInt(document.getElementById("minutesInput").value);
 
-totalSeconds=mins*60;
-originalSeconds=mins*60;
+totalSeconds = mins * 60;
+originalSeconds = totalSeconds;
 
 updateDisplay();
 }
 
+document.getElementById("minutesInput").addEventListener("change", () => {
+
+let mins =
+parseInt(document.getElementById("minutesInput").value);
+
+totalSeconds = mins * 60;
+originalSeconds = totalSeconds;
+
 updateDisplay();
+});
 
 function addTodo(){
 
-let input=document.getElementById("todoInput");
+let input = document.getElementById("todoInput");
 
-if(input.value.trim()==="") return;
+if(input.value.trim() === "") return;
 
-let todos=
+let todos =
 JSON.parse(localStorage.getItem("todos")) || [];
 
 todos.push(input.value);
 
-localStorage.setItem("todos",
-JSON.stringify(todos));
+localStorage.setItem(
+"todos",
+JSON.stringify(todos)
+);
 
-input.value="";
+input.value = "";
+
+loadTodos();
+}
+
+function deleteTodo(index){
+
+let todos =
+JSON.parse(localStorage.getItem("todos")) || [];
+
+todos.splice(index,1);
+
+localStorage.setItem(
+"todos",
+JSON.stringify(todos)
+);
 
 loadTodos();
 }
 
 function loadTodos(){
 
-let list=document.getElementById("todoList");
+let list =
+document.getElementById("todoList");
 
-list.innerHTML="";
+list.innerHTML = "";
 
-let todos=
+let todos =
 JSON.parse(localStorage.getItem("todos")) || [];
 
 todos.forEach((todo,index)=>{
 
-let li=document.createElement("li");
+let li = document.createElement("li");
 
-li.innerHTML=
-`${todo}
-<button onclick="deleteTodo(${index})"
-style="margin-left:10px;background:red;color:white;border:none;padding:5px 10px;border-radius:5px;">
+li.innerHTML = `
+<span>${todo}</span>
+<button class="deleteBtn"
+onclick="deleteTodo(${index})">
 삭제
-</button>`;
+</button>
+`;
 
 list.appendChild(li);
-
 });
 }
 
-function deleteTodo(index){
-
-let todos=
-JSON.parse(localStorage.getItem("todos")) || [];
-
-todos.splice(index,1);
-
-localStorage.setItem("todos",
-JSON.stringify(todos));
-
+updateDisplay();
 loadTodos();
-}
-
-loadTodos();
-
 </script>
 
 </body>
