@@ -3,128 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudyTools</title>
+<title>📚 StudyTools</title>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Segoe UI',sans-serif;
-}
-
 body{
-background:#07152f;
-color:white;
-padding:30px;
+    background:#121212;
+    color:white;
+    font-family:Arial,sans-serif;
+    text-align:center;
+    padding:30px;
 }
 
 .container{
-max-width:800px;
-margin:auto;
-}
-
-.card{
-background:#18253d;
-padding:25px;
-margin-bottom:20px;
-border-radius:15px;
+    max-width:500px;
+    margin:auto;
+    background:#1e1e1e;
+    padding:20px;
+    border-radius:15px;
 }
 
 h1{
-text-align:center;
-margin-bottom:25px;
-}
-
-h2{
-margin-bottom:15px;
-}
-
-.timer{
-font-size:60px;
-font-weight:bold;
-text-align:center;
-margin:20px 0;
-}
-
-button{
-padding:10px 20px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin:5px;
-font-weight:bold;
-}
-
-.start{
-background:#3b82f6;
-color:white;
-}
-
-.stop{
-background:#ef4444;
-color:white;
-}
-
-.reset{
-background:#6b7280;
-color:white;
-}
-
-.add{
-background:#22c55e;
-color:white;
+    color:#4CAF50;
 }
 
 input{
-padding:10px;
-border-radius:8px;
-border:none;
+    width:80px;
+    padding:8px;
+    margin:5px;
+    border:none;
+    border-radius:5px;
 }
 
-#todoInput{
-width:75%;
+button{
+    padding:10px 15px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
 }
 
-ul{
-margin-top:15px;
-list-style:none;
+.start{
+    background:#4CAF50;
+    color:white;
 }
 
-li{
-margin-bottom:10px;
-padding:10px;
-background:#24344f;
-border-radius:8px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+.break{
+    background:#2196F3;
+    color:white;
 }
 
-.progress{
-width:100%;
-height:20px;
-margin-top:15px;
+.motivation{
+    background:#ff9800;
+    color:white;
 }
 
-.stats{
-font-size:18px;
-line-height:2;
+#timer{
+    font-size:50px;
+    margin:20px;
 }
 
-.quote{
-font-size:18px;
-color:#facc15;
-font-weight:bold;
-text-align:center;
+#status{
+    font-size:20px;
+    margin-top:10px;
 }
 
-.deleteBtn{
-background:#ef4444;
-color:white;
-padding:5px 10px;
-border:none;
-border-radius:5px;
+#quote{
+    margin-top:20px;
+    font-size:18px;
+    color:#ffd54f;
 }
 </style>
 </head>
@@ -135,223 +82,114 @@ border-radius:5px;
 
 <h1>📚 StudyTools</h1>
 
-<div class="card">
-<h2>🔥 오늘의 동기부여</h2>
-<p class="quote" id="quote"></p>
+<div>
+공부 시간(분)
+<input type="number" id="studyTime" value="25">
 </div>
 
-<div class="card">
-<h2>⏱ 공부 타이머</h2>
-
-<label>공부 시간 (분)</label><br><br>
-
-<input type="number" id="minutesInput" value="25" min="1">
-
-<div class="timer" id="timer">25:00</div>
-
-<div style="text-align:center;">
-<button class="start" onclick="startTimer()">시작</button>
-<button class="stop" onclick="stopTimer()">멈춤</button>
-<button class="reset" onclick="resetTimer()">초기화</button>
+<div>
+휴식 시간(분)
+<input type="number" id="breakTime" value="5">
 </div>
 
-<progress id="progressBar" class="progress" value="0" max="100"></progress>
-</div>
+<button class="start" onclick="startStudy()">공부 시작</button>
+<button class="break" onclick="startBreak()">휴식 시작</button>
+<button class="motivation" onclick="showQuote()">동기부여</button>
 
-<div class="card">
-<h2>📊 공부 통계</h2>
+<div id="timer">00:00</div>
+<div id="status">대기 중</div>
 
-<div class="stats">
-총 공부 시간 : <span id="totalStudy">0</span>분<br>
-완료한 공부 세션 : <span id="sessionCount">0</span>회
-</div>
-</div>
-
-<div class="card">
-<h2>✅ 할 일 목록</h2>
-
-<input type="text" id="todoInput" placeholder="할 일을 입력하세요">
-<button class="add" onclick="addTodo()">추가</button>
-
-<ul id="todoList"></ul>
-</div>
+<div id="quote"></div>
 
 </div>
 
 <script>
-const quotes = [
-"오늘의 1시간이 미래의 나를 만든다.",
-"포기하지 않는 사람이 결국 이긴다.",
-"작은 노력도 매일 쌓이면 큰 결과가 된다.",
-"지금의 집중이 내일의 자신감을 만든다.",
-"성공은 꾸준함이 만든 습관의 결과다.",
-"남들보다 조금 더 버티면 반드시 성장한다."
+
+let timer;
+let timeLeft=0;
+
+const quotes=[
+"포기하지 마라. 오늘의 노력이 내일의 결과다.",
+"성공은 작은 노력이 반복된 결과다.",
+"지금 힘들어도 미래의 너는 고마워할 것이다.",
+"꿈은 행동으로 이루어진다.",
+"오늘 공부한 1시간이 미래를 바꾼다.",
+"실패는 끝이 아니라 성장의 과정이다.",
+"꾸준함이 재능을 이긴다.",
+"할 수 있다고 믿는 순간 절반은 성공이다.",
+"오늘의 선택이 내일의 나를 만든다.",
+"천천히 가도 멈추지만 않으면 된다."
 ];
 
-document.getElementById("quote").innerText =
-quotes[Math.floor(Math.random()*quotes.length)];
+function showQuote(){
+    const random=Math.floor(Math.random()*quotes.length);
+    document.getElementById("quote").innerText=quotes[random];
+}
 
-let timer = null;
+function startStudy(){
+    clearInterval(timer);
 
-let totalStudy =
-parseInt(localStorage.getItem("totalStudy")) || 0;
+    let minutes=parseInt(document.getElementById("studyTime").value);
 
-let sessionCount =
-parseInt(localStorage.getItem("sessionCount")) || 0;
+    if(isNaN(minutes)||minutes<=0){
+        alert("공부 시간을 입력하세요.");
+        return;
+    }
 
-document.getElementById("totalStudy").innerText = totalStudy;
-document.getElementById("sessionCount").innerText = sessionCount;
+    timeLeft=minutes*60;
+    document.getElementById("status").innerText="📖 공부 중";
 
-let minutes =
-parseInt(document.getElementById("minutesInput").value);
+    startTimer();
+}
 
-let totalSeconds = minutes * 60;
-let originalSeconds = totalSeconds;
+function startBreak(){
+    clearInterval(timer);
 
-function updateDisplay(){
+    let minutes=parseInt(document.getElementById("breakTime").value);
 
-let mins = Math.floor(totalSeconds / 60);
-let secs = totalSeconds % 60;
+    if(isNaN(minutes)||minutes<=0){
+        alert("휴식 시간을 입력하세요.");
+        return;
+    }
 
-document.getElementById("timer").innerText =
-String(mins).padStart(2,"0") + ":" +
-String(secs).padStart(2,"0");
+    timeLeft=minutes*60;
+    document.getElementById("status").innerText="☕ 휴식 중";
 
-let progress =
-((originalSeconds-totalSeconds)/originalSeconds)*100;
-
-document.getElementById("progressBar").value = progress;
+    startTimer();
 }
 
 function startTimer(){
 
-if(timer) return;
+    updateDisplay();
 
-timer = setInterval(() => {
+    timer=setInterval(()=>{
 
-if(totalSeconds > 0){
+        timeLeft--;
 
-totalSeconds--;
-updateDisplay();
+        updateDisplay();
 
-}else{
+        if(timeLeft<=0){
 
-clearInterval(timer);
-timer = null;
+            clearInterval(timer);
 
-let mins =
-parseInt(document.getElementById("minutesInput").value);
+            document.getElementById("status").innerText="✅ 완료!";
 
-totalStudy += mins;
-sessionCount++;
+            alert("시간 종료!");
+        }
 
-localStorage.setItem("totalStudy", totalStudy);
-localStorage.setItem("sessionCount", sessionCount);
-
-document.getElementById("totalStudy").innerText = totalStudy;
-document.getElementById("sessionCount").innerText = sessionCount;
-
-alert("🎉 공부 완료!");
-
+    },1000);
 }
 
-},1000);
+function updateDisplay(){
+
+    let minutes=Math.floor(timeLeft/60);
+    let seconds=timeLeft%60;
+
+    document.getElementById("timer").innerText=
+    String(minutes).padStart(2,'0')+":"+
+    String(seconds).padStart(2,'0');
 }
 
-function stopTimer(){
-clearInterval(timer);
-timer = null;
-}
-
-function resetTimer(){
-
-clearInterval(timer);
-timer = null;
-
-let mins =
-parseInt(document.getElementById("minutesInput").value);
-
-totalSeconds = mins * 60;
-originalSeconds = totalSeconds;
-
-updateDisplay();
-}
-
-document.getElementById("minutesInput").addEventListener("change", () => {
-
-let mins =
-parseInt(document.getElementById("minutesInput").value);
-
-totalSeconds = mins * 60;
-originalSeconds = totalSeconds;
-
-updateDisplay();
-});
-
-function addTodo(){
-
-let input = document.getElementById("todoInput");
-
-if(input.value.trim() === "") return;
-
-let todos =
-JSON.parse(localStorage.getItem("todos")) || [];
-
-todos.push(input.value);
-
-localStorage.setItem(
-"todos",
-JSON.stringify(todos)
-);
-
-input.value = "";
-
-loadTodos();
-}
-
-function deleteTodo(index){
-
-let todos =
-JSON.parse(localStorage.getItem("todos")) || [];
-
-todos.splice(index,1);
-
-localStorage.setItem(
-"todos",
-JSON.stringify(todos)
-);
-
-loadTodos();
-}
-
-function loadTodos(){
-
-let list =
-document.getElementById("todoList");
-
-list.innerHTML = "";
-
-let todos =
-JSON.parse(localStorage.getItem("todos")) || [];
-
-todos.forEach((todo,index)=>{
-
-let li = document.createElement("li");
-
-li.innerHTML = `
-<span>${todo}</span>
-<button class="deleteBtn"
-onclick="deleteTodo(${index})">
-삭제
-</button>
-`;
-
-list.appendChild(li);
-});
-}
-
-updateDisplay();
-loadTodos();
 </script>
 
 </body>
