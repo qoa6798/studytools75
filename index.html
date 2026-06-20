@@ -3,88 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📚 StudyTools Pro</title>
+<title>StudyTools Pro</title>
 
 <style>
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
 
 body{
-    background:#0f172a;
-    color:white;
-    font-family:Arial,sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-    padding:20px;
+background:#0f172a;
+color:white;
+display:flex;
+justify-content:center;
+padding:20px;
 }
 
 .container{
-    width:100%;
-    max-width:600px;
-    background:#1e293b;
-    padding:25px;
-    border-radius:20px;
-    box-shadow:0 0 20px rgba(0,0,0,.4);
-}
-
-h1{
-    text-align:center;
-    margin-bottom:20px;
-    color:#38bdf8;
+width:100%;
+max-width:700px;
 }
 
 .card{
-    background:#334155;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:15px;
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+margin-bottom:15px;
 }
 
-label{
-    display:block;
-    margin-bottom:5px;
+h1{
+text-align:center;
+margin-bottom:20px;
+color:#38bdf8;
 }
 
 input{
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:8px;
-    margin-bottom:10px;
-}
-
-#timer{
-    font-size:70px;
-    text-align:center;
-    font-weight:bold;
-    margin:20px 0;
-}
-
-#status{
-    text-align:center;
-    font-size:20px;
-    margin-bottom:20px;
-}
-
-.buttons{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    justify-content:center;
+width:100%;
+padding:10px;
+border:none;
+border-radius:8px;
+margin-top:5px;
+margin-bottom:10px;
 }
 
 button{
-    border:none;
-    padding:12px 18px;
-    border-radius:10px;
-    color:white;
-    cursor:pointer;
-    font-size:15px;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+cursor:pointer;
+color:white;
 }
 
 .study{background:#22c55e;}
@@ -92,33 +61,70 @@ button{
 .pause{background:#ef4444;}
 .resume{background:#f59e0b;}
 .motivation{background:#8b5cf6;}
+.todoBtn{background:#14b8a6;}
+
+.buttons{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+justify-content:center;
+margin-top:15px;
+}
+
+#timer{
+font-size:70px;
+font-weight:bold;
+text-align:center;
+margin:20px 0;
+}
+
+#status{
+text-align:center;
+font-size:20px;
+margin-bottom:20px;
+}
 
 .quote{
-    margin-top:20px;
-    background:#475569;
-    padding:15px;
-    border-radius:10px;
-    text-align:center;
-    min-height:60px;
+background:#334155;
+padding:15px;
+border-radius:10px;
+text-align:center;
+margin-top:15px;
 }
 
 .stats{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:20px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:15px;
 }
 
 .stat{
-    background:#334155;
-    padding:15px;
-    border-radius:10px;
-    text-align:center;
+background:#334155;
+padding:15px;
+border-radius:10px;
+text-align:center;
 }
 
-.stat h3{
-    color:#38bdf8;
-    margin-bottom:5px;
+.todo-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#334155;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.todo-left{
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+.done{
+text-decoration:line-through;
+opacity:.6;
 }
 </style>
 </head>
@@ -129,15 +135,19 @@ button{
 <h1>📚 StudyTools Pro</h1>
 
 <div class="card">
-<label>공부 시간 (분)</label>
+
+<label>오늘 목표</label>
+<input id="goalInput" placeholder="예) 영어 단어 100개">
+
+<label>공부 시간(분)</label>
 <input type="number" id="studyTime" value="25">
 
-<label>휴식 시간 (분)</label>
+<label>휴식 시간(분)</label>
 <input type="number" id="breakTime" value="5">
+
 </div>
 
 <div id="timer">25:00</div>
-
 <div id="status">대기 중</div>
 
 <div class="buttons">
@@ -153,6 +163,7 @@ button{
 </div>
 
 <div class="stats">
+
 <div class="stat">
 <h3>총 공부시간</h3>
 <div id="totalStudy">0분</div>
@@ -162,6 +173,21 @@ button{
 <h3>공부 횟수</h3>
 <div id="sessionCount">0회</div>
 </div>
+
+</div>
+
+<div class="card">
+
+<h2>📌 할 일 목록</h2>
+
+<input id="todoInput" placeholder="할 일을 입력">
+
+<button class="todoBtn" onclick="addTodo()">
+추가
+</button>
+
+<div id="todoList"></div>
+
 </div>
 
 </div>
@@ -169,166 +195,216 @@ button{
 <script>
 
 let timer;
-let timeLeft = 1500;
-let paused = false;
-let currentMode = "";
+let timeLeft=1500;
+let paused=false;
 
-let totalStudy =
-parseInt(localStorage.getItem("totalStudy")) || 0;
+let totalStudy=
+parseInt(localStorage.getItem("totalStudy"))||0;
 
-let sessionCount =
-parseInt(localStorage.getItem("sessionCount")) || 0;
+let sessionCount=
+parseInt(localStorage.getItem("sessionCount"))||0;
 
-document.getElementById("totalStudy").innerText =
-totalStudy + "분";
+let todos=
+JSON.parse(localStorage.getItem("todos"))||[];
 
-document.getElementById("sessionCount").innerText =
-sessionCount + "회";
+document.getElementById("totalStudy").innerText=
+totalStudy+"분";
 
-const quotes = [
+document.getElementById("sessionCount").innerText=
+sessionCount+"회";
+
+const quotes=[
 "포기하지 마라. 오늘의 노력이 내일의 결과다.",
 "성공은 작은 노력이 반복된 결과다.",
-"지금 힘들어도 미래의 너는 고마워할 것이다.",
 "꾸준함이 재능을 이긴다.",
 "오늘 공부한 1시간이 미래를 바꾼다.",
 "꿈은 행동으로 이루어진다.",
 "천천히 가도 멈추지만 않으면 된다.",
-"할 수 있다고 믿는 순간 절반은 성공이다.",
-"실패는 끝이 아니라 성장의 과정이다.",
-"오늘의 선택이 내일의 나를 만든다."
+"실패는 성장의 과정이다.",
+"할 수 있다고 믿는 순간 절반은 성공이다."
 ];
 
 function updateDisplay(){
-    let min = Math.floor(timeLeft/60);
-    let sec = timeLeft%60;
+let min=Math.floor(timeLeft/60);
+let sec=timeLeft%60;
 
-    document.getElementById("timer").innerText =
-    String(min).padStart(2,"0")+":"+
-    String(sec).padStart(2,"0");
+document.getElementById("timer").innerText=
+String(min).padStart(2,"0")+":"+
+String(sec).padStart(2,"0");
+}
+
+function runTimer(){
+
+clearInterval(timer);
+
+timer=setInterval(()=>{
+
+if(!paused){
+
+timeLeft--;
+
+updateDisplay();
+
+if(timeLeft<=0){
+clearInterval(timer);
+alert("시간 종료!");
+}
+
+}
+
+},1000);
+
 }
 
 function startStudy(){
 
-    clearInterval(timer);
+let mins=
+parseInt(document.getElementById("studyTime").value);
 
-    let mins =
-    parseInt(document.getElementById("studyTime").value);
+timeLeft=mins*60;
 
-    if(mins <= 0 || isNaN(mins)){
-        alert("공부 시간을 입력하세요.");
-        return;
-    }
+sessionCount++;
+totalStudy+=mins;
 
-    currentMode = "study";
-    timeLeft = mins * 60;
+localStorage.setItem("sessionCount",sessionCount);
+localStorage.setItem("totalStudy",totalStudy);
 
-    document.getElementById("status").innerText =
-    "📖 공부 중";
+document.getElementById("sessionCount").innerText=
+sessionCount+"회";
 
-    sessionCount++;
-    localStorage.setItem("sessionCount",sessionCount);
+document.getElementById("totalStudy").innerText=
+totalStudy+"분";
 
-    document.getElementById("sessionCount").innerText =
-    sessionCount + "회";
+document.getElementById("status").innerText=
+"📖 공부 중";
 
-    startTimer();
+paused=false;
+
+updateDisplay();
+runTimer();
 }
 
 function startBreak(){
 
-    clearInterval(timer);
+let mins=
+parseInt(document.getElementById("breakTime").value);
 
-    let mins =
-    parseInt(document.getElementById("breakTime").value);
+timeLeft=mins*60;
 
-    if(mins <= 0 || isNaN(mins)){
-        alert("휴식 시간을 입력하세요.");
-        return;
-    }
+document.getElementById("status").innerText=
+"☕ 휴식 중";
 
-    currentMode = "break";
-    timeLeft = mins * 60;
+paused=false;
 
-    document.getElementById("status").innerText =
-    "☕ 휴식 중";
-
-    startTimer();
-}
-
-function startTimer(){
-
-    paused = false;
-
-    updateDisplay();
-
-    timer = setInterval(() => {
-
-        if(paused) return;
-
-        timeLeft--;
-
-        updateDisplay();
-
-        if(timeLeft <= 0){
-
-            clearInterval(timer);
-
-            document.getElementById("status").innerText =
-            "✅ 완료";
-
-            alert("시간 종료!");
-        }
-
-    },1000);
+updateDisplay();
+runTimer();
 }
 
 function pauseTimer(){
-    paused = true;
-    document.getElementById("status").innerText =
-    "⏸ 일시정지";
+paused=true;
+document.getElementById("status").innerText=
+"⏸ 멈춤";
 }
 
 function resumeTimer(){
-    paused = false;
-
-    if(currentMode==="study"){
-        document.getElementById("status").innerText =
-        "📖 공부 중";
-    }
-
-    if(currentMode==="break"){
-        document.getElementById("status").innerText =
-        "☕ 휴식 중";
-    }
+paused=false;
+document.getElementById("status").innerText=
+"▶ 진행 중";
 }
 
 function showQuote(){
 
-    const random =
-    Math.floor(Math.random()*quotes.length);
+let random=
+quotes[Math.floor(Math.random()*quotes.length)];
 
-    document.getElementById("quote").innerText =
-    quotes[random];
+document.getElementById("quote").innerText=
+"🔥 "+random;
 }
 
-setInterval(()=>{
+function renderTodos(){
 
-    if(currentMode==="study" && !paused && timeLeft>0){
+const list=
+document.getElementById("todoList");
 
-        totalStudy += 1/60;
+list.innerHTML="";
 
-        localStorage.setItem(
-            "totalStudy",
-            Math.floor(totalStudy)
-        );
+todos.forEach((todo,index)=>{
 
-        document.getElementById("totalStudy").innerText =
-        Math.floor(totalStudy) + "분";
-    }
+list.innerHTML+=`
+<div class="todo-item">
 
-},1000);
+<div class="todo-left">
+
+<input type="checkbox"
+${todo.done?"checked":""}
+onchange="toggleTodo(${index})">
+
+<span class="${todo.done?"done":""}">
+${todo.text}
+</span>
+
+</div>
+
+<button onclick="deleteTodo(${index})">
+삭제
+</button>
+
+</div>
+`;
+
+});
+
+}
+
+function addTodo(){
+
+const input=
+document.getElementById("todoInput");
+
+if(!input.value.trim()) return;
+
+todos.push({
+text:input.value,
+done:false
+});
+
+localStorage.setItem(
+"todos",
+JSON.stringify(todos)
+);
+
+input.value="";
+
+renderTodos();
+}
+
+function toggleTodo(index){
+
+todos[index].done=
+!todos[index].done;
+
+localStorage.setItem(
+"todos",
+JSON.stringify(todos)
+);
+
+renderTodos();
+}
+
+function deleteTodo(index){
+
+todos.splice(index,1);
+
+localStorage.setItem(
+"todos",
+JSON.stringify(todos)
+);
+
+renderTodos();
+}
 
 updateDisplay();
+renderTodos();
 
 </script>
 
